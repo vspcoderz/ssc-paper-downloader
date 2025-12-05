@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSC Bulk PDF Downloader</title>
+    <style>
+        :root {
+            --color-primary: #0052cc;
+            --color-primary-light: #0066ff;
+            --color-primary-dark: #003399;
+            --color-success: #28a745;
+            --color-error: #dc3545;
+            --color-bg: #ffffff;
+            --color-surface: #ffffff;
+            --color-text: #333333;
+            --color-text-secondary: #666666;
+            --color-border: #e0e0e0;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: var(--color-text);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            flex: 1;
+        }
+        
+        .header {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--color-border);
+        }
+        
+        h1 {
+            color: var(--color-primary);
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+        
+        .content {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--color-primary);
+            padding-bottom: 10px;
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .checkbox-item:hover {
+            background: #f0f6ff;
+            border-color: var(--color-primary);
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--color-primary);
+        }
+        
+        .checkbox-item label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 14px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .btn-primary:hover {
+            background: #1a6fa0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 133, 208, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+        
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .status.show {
+            display: block;
+        }
+        
+        .status.success {
+            background: #d5f4e6;
+            color: var(--color-success);
+            border: 1px solid var(--color-success);
+        }
+        
+        .status.error {
+            background: #fadbd8;
+            color: var(--color-error);
+            border: 1px solid var(--color-error);
+        }
+        
+        .status.info {
+            background: #d6eaf8;
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+        }
+        
+        .download-list {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .download-item {
+            padding: 8px;
+            margin-bottom: 8px;
+            background: white;
+            border-left: 3px solid var(--color-primary);
+            border-radius: 3px;
+            word-break: break-all;
+        }
+        
+        .select-all {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f0f6ff;
+            border: 1px solid #0052cc33;
+            border-radius: 6px;
+        }
+        
+        .select-all input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--color-primary);
+            cursor: pointer;
+        }
+        
+        .select-all label {
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 8px;
+            color: var(--color-primary);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #ecf0f1;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--color-success);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .info-text {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-top: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px 20px 20px;
+            color: var(--color-text-secondary);
+            font-size: 13px;
+            border-top: 1px solid var(--color-border);
+            margin-top: 30px;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        .footer a {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: var(--color-primary-light);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 SSC Question Papers Downloader</h1>
+            <p class="subtitle">Download All Maharashtra 10th SSC Papers (2017-2025) with ZIP Support</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <div class="select-all">
+                    <input type="checkbox" id="selectAll">
+                    <label for="selectAll"><strong>Select All Papers</strong></label>
+                </div>
+                
+                <div class="section-title">📅 2025 Question Papers</div>
+                <div class="checkbox-group" id="papers2025"></div>
+                
+                <div class="section-title">📅 2024 Question Papers</div>
+                <div class="checkbox-group" id="papers2024"></div>
+
+                <div class="section-title">📅 2019 Question Papers</div>
+                <div class="checkbox-group" id="papers2019"></div>
+
+                <div class="section-title">📅 2018 Question Papers</div>
+                <div class="checkbox-group" id="papers2018"></div>
+
+                <div class="section-title">📅 2017 Question Papers</div>
+                <div class="checkbox-group" id="papers2017"></div>
+                
+                <div class="button-group">
+                    <button class="btn-primary" id="downloadBtn">⬇️ Download Selected</button>
+                    <button class="btn-primary" id="zipBtn">📦 Download as ZIP</button>
+                    <button class="btn-secondary" id="copyBtn">📋 Copy URLs</button>
+                </div>
+                
+                <div class="status" id="status"></div>
+                <div class="progress-bar" id="progressBar" style="display: none;">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Made with ❤️ by <strong>Vedant Pakwanne</strong></p>
+            <p>
+                <a href="https://github.com/vspcoderz" target="_blank">GitHub</a> | 
+                <a href="https://vspcoderz.is-a.dev" target="_blank">Website</a>
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        const pdfData = {
+            2025: [
+                { name: 'Maths', url: 'https://images.shiksha.com/mediadata/pdf/1756657792phpvax6F5.pdf' },
+                { name: 'Marathi', url: 'https://images.shiksha.com/mediadata/pdf/1756700789phpFDsWMp.pdf' },
+                { name: 'Social Science', url: 'https://images.shiksha.com/mediadata/pdf/1756701281php48ua7T.pdf' },
+                { name: 'Science', url: 'https://images.shiksha.com/mediadata/pdf/1756701509phpp9GSaG.pdf' }
+            ],
+            2024: [
+                { name: 'Science (Part 1)', url: 'https://images.shiksha.com/mediadata/pdf/1692596378phpPrFH59.pdf' },
+                { name: 'Science (Part 2)', url: 'https://images.shiksha.com/mediadata/pdf/1692596398phpVMjk8R.pdf' },
+                { name: 'English', url: 'https://images.shiksha.com/mediadata/pdf/1709615960phpxBXeqc.pdf' },
+                { name: 'Marathi', url: 'https://images.shiksha.com/mediadata/pdf/1690533729phpZs9LaH.pdf' },
+                { name: 'Maths', url: 'https://images.shiksha.com/mediadata/pdf/1692598568phpqiRoFx.pdf' }
+            ],
+            2019: [
+                { name: 'English', url: 'https://images.shiksha.com/mediadata/pdf/1677235769phpzrhXMZ.pdf' },
+                { name: 'Hindi (Part 1)', url: 'https://images.shiksha.com/mediadata/pdf/1677235783phps50GAA.pdf' },
+                { name: 'Hindi (Part 2)', url: 'https://images.shiksha.com/mediadata/pdf/1677235802phpWbQf7M.pdf' },
+                { name: 'Marathi', url: 'https://images.shiksha.com/mediadata/pdf/1677235815phpb2wM7Y.pdf' },
+                { name: 'Maths (Part 1)', url: 'https://images.shiksha.com/mediadata/pdf/1677235837php9aRjbg.pdf' },
+                { name: 'Maths (Part 2)', url: 'https://images.shiksha.com/mediadata/pdf/1677235856phpf2aWGO.pdf' },
+                { name: 'Science (Part 1)', url: 'https://images.shiksha.com/mediadata/pdf/1677235871php50osIG.pdf' },
+                { name: 'Science (Part 2)', url: 'https://images.shiksha.com/mediadata/pdf/1677235889phpxoPZ32.pdf' },
+                { name: 'Geography', url: 'https://images.shiksha.com/mediadata/pdf/1677236271phpHkkZoq.pdf' }
+            ],
+            2018: [
+                { name: 'English', url: 'https://images.shiksha.com/mediadata/pdf/1677235964phpTiiQpG.pdf' },
+                { name: 'Marathi', url: 'https://images.shiksha.com/mediadata/pdf/1677235996php8Uxn1S.pdf' },
+                { name: 'Maths (Part 1)', url: 'https://images.shiksha.com/mediadata/pdf/1677236050phpJElVtD.pdf' },
+                { name: 'Maths (Part 2)', url: 'https://images.shiksha.com/mediadata/pdf/1677236061php9GFHCo.pdf' },
+                { name: 'Science (Part 1)', url: 'https://images.shiksha.com/mediadata/pdf/1677236073phpJrGswN.pdf' },
+                { name: 'Science (Part 2)', url: 'https://images.shiksha.com/mediadata/pdf/1677236084phplWPaFg.pdf' },
+                { name: 'History & Political Science', url: 'https://images.shiksha.com/mediadata/pdf/1677236099php3tmhAE.pdf' },
+                { name: 'Geography', url: 'https://images.shiksha.com/mediadata/pdf/1677236140phpD5p4gz.pdf' }
+            ],
+            2017: [
+                { name: 'English', url: 'https://images.shiksha.com/mediadata/pdf/1677236298php3bsFjW.pdf' },
+                { name: 'Hindi', url: 'https://images.shiksha.com/mediadata/pdf/1677236313phpEFTaUh.pdf' },
+                { name: 'Marathi', url: 'https://images.shiksha.com/mediadata/pdf/1677236405phpbTiknU.pdf' },
+                { name: 'Maths (Part 1)', url: 'https://images.shiksha.com/mediadata/pdf/1677236339phpK6mIK1.pdf' },
+                { name: 'Maths (Part 2)', url: 'https://images.shiksha.com/mediadata/pdf/1677236348phpAVaZUq.pdf' },
+                { name: 'Science', url: 'https://images.shiksha.com/mediadata/pdf/1677236360phpD1e6CQ.pdf' },
+                { name: 'Geography', url: 'https://images.shiksha.com/mediadata/pdf/1677236386phpoGzD83.pdf' }
+            ]
+        };
+        
+        function initializePapers() {
+            Object.keys(pdfData).forEach(year => {
+                const container = document.getElementById(`papers${year}`);
+                pdfData[year].forEach(paper => {
+                    const div = document.createElement('div');
+                    div.className = 'checkbox-item';
+                    const safeName = paper.name.replace(/[&\s\/]/g, '_');
+                    div.innerHTML = `
+                        <input type="checkbox" class="paper-checkbox" value="${paper.url}" data-name="SSC_${year}_${safeName}">
+                        <label>${paper.name}</label>
+                    `;
+                    container.appendChild(div);
+                });
+            });
+        }
+        
+        document.getElementById('selectAll').addEventListener('change', (e) => {
+            document.querySelectorAll('.paper-checkbox').forEach(checkbox => {
+                checkbox.checked = e.target.checked;
+            });
+        });
+        
+        document.getElementById('downloadBtn').addEventListener('click', async () => {
+            const selected = Array.from(document.querySelectorAll('.paper-checkbox:checked'));
+            
+            if (selected.length === 0) {
+                showStatus('Please select at least one PDF to download', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('downloadBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Downloading...';
+            
+            showStatus(`Starting download of ${selected.length} files...`, 'info');
+            showProgress(true);
+            
+            let completed = 0;
+            const total = selected.length;
+            
+            for (const checkbox of selected) {
+                const url = checkbox.value;
+                const name = checkbox.getAttribute('data-name');
+                
+                try {
+                    const response = await fetch(url);
+                    const blob = await response.blob();
+                    
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `${name}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    completed++;
+                    const progress = (completed / total) * 100;
+                    updateProgress(progress);
+                    
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                } catch (error) {
+                    console.error(`Error downloading ${name}:`, error);
+                }
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '⬇️ Download Selected';
+            showStatus(`✅ Downloaded ${completed}/${total} files successfully!`, 'success');
+            showProgress(false);
+        });
+
+        document.getElementById('zipBtn').addEventListener('click', async () => {
+            const selected = Array.from(document.querySelectorAll('.paper-checkbox:checked'));
+            
+            if (selected.length === 0) {
+                showStatus('Please select at least one PDF to download', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('zipBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Creating ZIP...';
+            
+            showStatus(`Creating ZIP with ${selected.length} files...`, 'info');
+            showProgress(true);
+            
+            try {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+                script.onload = async () => {
+                    const JSZip = window.JSZip;
+                    const zip = new JSZip();
+                    let completed = 0;
+                    const total = selected.length;
+                    
+                    for (const checkbox of selected) {
+                        const url = checkbox.value;
+                        const name = checkbox.getAttribute('data-name');
+                        
+                        try {
+                            const response = await fetch(url);
+                            const blob = await response.blob();
+                            zip.file(`${name}.pdf`, blob);
+                            
+                            completed++;
+                            updateProgress((completed / total) * 100);
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                        } catch (error) {
+                            console.error(`Error: ${name}:`, error);
+                        }
+                    }
+                    
+                    updateProgress(95);
+                    const zipBlob = await zip.generateAsync({type: 'blob'});
+                    
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(zipBlob);
+                    link.download = 'SSC_Papers.zip';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    btn.disabled = false;
+                    btn.textContent = '📦 Download as ZIP';
+                    updateProgress(100);
+                    showStatus(`✅ ZIP created with ${selected.length} papers!`, 'success');
+                    showProgress(false);
+                };
+                document.head.appendChild(script);
+            } catch (error) {
+                console.error('ZIP creation error:', error);
+                showStatus('Failed to create ZIP. Try downloading individually.', 'error');
+                btn.disabled = false;
+                btn.textContent = '📦 Download as ZIP';
+                showProgress(false);
+            }
+        });
+        
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const selected = Array.from(document.querySelectorAll('.paper-checkbox:checked'));
+            
+            if (selected.length === 0) {
+                showStatus('Please select at least one PDF', 'error');
+                return;
+            }
+            
+            const urls = selected.map(cb => cb.value).join('\n');
+            navigator.clipboard.writeText(urls).then(() => {
+                showStatus(`✅ Copied ${selected.length} URLs to clipboard!`, 'success');
+            });
+        });
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status show ${type}`;
+        }
+        
+        function updateProgress(percentage) {
+            const fill = document.getElementById('progressFill');
+            fill.style.width = percentage + '%';
+        }
+
+        function showProgress(show) {
+            document.getElementById('progressBar').style.display = show ? 'block' : 'none';
+            if (show) document.getElementById('progressFill').style.width = '0%';
+        }
+        
+        // Initialize on load
+        initializePapers();
+    </script>
+</body>
+</html>
